@@ -1,5 +1,6 @@
 locals {
   bucket_name = "tf-intro-site-bucket-kashirin-max"
+  index = "index.html"
 }
 
 // Create SA
@@ -11,7 +12,7 @@ resource "yandex_iam_service_account" "sa" {
 // Grant permissions
 resource "yandex_resourcemanager_folder_iam_member" "sa-editor" {
   folder_id = local.folder_id
-  role      = "storage.editor"
+  role      = "storage.admin"
   member    = "serviceAccount:${yandex_iam_service_account.sa.id}"
 }
 
@@ -26,5 +27,25 @@ resource "yandex_storage_bucket" "test" {
   access_key = yandex_iam_service_account_static_access_key.sa-static-key.access_key
   secret_key = yandex_iam_service_account_static_access_key.sa-static-key.secret_key
   bucket = local.bucket_name
+  acl = "public-read"
+
+  website {
+    index_document = local.index
+  }
+}
+
+resource "yandex_storage_object" "index" {
+  access_key = yandex_iam_service_account_static_access_key.sa-static-key.access_key
+  secret_key = yandex_iam_service_account_static_access_key.sa-static-key.secret_key
+  acl = "public-read"
+  bucket = yandex_storage_bucket.test.id
+  key    = local.index
+  source = "site/${local.index}"
+  
+}
+
+output site_name {
+  value       = yandex_storage_bucket.test.website_endpoint
+
 }
 
