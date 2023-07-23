@@ -1,0 +1,5 @@
+- generate key-file
+- install terraform
+- terraform init
+- terraform apply
+- yes

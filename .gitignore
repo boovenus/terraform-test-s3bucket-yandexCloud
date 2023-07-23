@@ -1,0 +1,6 @@
+# compiled output
+/authorized_key.json
+/.terraform
+/.terraform.lock.hcl
+/terraform.tfstate.backup
+/terraform.tfstate
