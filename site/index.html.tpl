@@ -7,5 +7,7 @@
 </head>
 <body>
    <h1>🦊 Elysia is running</h1> 
+   <p><img src="img/elysia.png" ></p>
+   Site endpoint ${endpoint}
 </body>
 </html>

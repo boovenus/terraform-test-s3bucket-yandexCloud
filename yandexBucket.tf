@@ -1,6 +1,6 @@
 locals {
   bucket_name = "tf-intro-site-bucket-kashirin-max"
-  index = "index.html"
+  index       = "index.html"
 }
 
 // Create SA
@@ -26,8 +26,8 @@ resource "yandex_iam_service_account_static_access_key" "sa-static-key" {
 resource "yandex_storage_bucket" "test" {
   access_key = yandex_iam_service_account_static_access_key.sa-static-key.access_key
   secret_key = yandex_iam_service_account_static_access_key.sa-static-key.secret_key
-  bucket = local.bucket_name
-  acl = "public-read"
+  bucket     = local.bucket_name
+  acl        = "public-read"
 
   website {
     index_document = local.index
@@ -37,15 +37,34 @@ resource "yandex_storage_bucket" "test" {
 resource "yandex_storage_object" "index" {
   access_key = yandex_iam_service_account_static_access_key.sa-static-key.access_key
   secret_key = yandex_iam_service_account_static_access_key.sa-static-key.secret_key
-  acl = "public-read"
-  bucket = yandex_storage_bucket.test.id
-  key    = local.index
-  source = "site/${local.index}"
-  
+  acl        = "public-read"
+  bucket     = yandex_storage_bucket.test.id
+  key        = local.index
+  # source = "site/${local.index}"
+  content_base64 = base64encode(local.index_template)
+  content_type   = "text/html"
+
 }
 
-output site_name {
-  value       = yandex_storage_bucket.test.website_endpoint
+resource "yandex_storage_object" "img" {
+  access_key = yandex_iam_service_account_static_access_key.sa-static-key.access_key
+  secret_key = yandex_iam_service_account_static_access_key.sa-static-key.secret_key
+  acl        = "public-read"
+  bucket     = yandex_storage_bucket.test.id
+  key        = each.key
+  source     = "site/${each.key}"
+  for_each   = fileset("site", "img/*")
+
+}
+
+locals {
+  index_template = templatefile("site/${local.index}.tpl", {
+    endpoint = yandex_storage_bucket.test.website_endpoint
+  })
+}
+
+output "site_name" {
+  value = yandex_storage_bucket.test.website_endpoint
 
 }
 
